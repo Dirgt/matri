@@ -10,6 +10,9 @@ import Gifts from "@/components/Gifts";
 import Instagram from "@/components/Instagram";
 import { supabase } from "@/utils/supabase";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
@@ -18,9 +21,9 @@ export default async function Home(props: Props) {
   const searchParams = await props.searchParams;
   const id = searchParams.id as string | undefined;
 
-  let guestNames = ["Lola Pérez", "Tomás Pérez"]; // Default fallback
-  let passes = 2; // Default fallback
-  let showGuestInfo = true;
+  let guestNames: string[] = [];
+  let passes = 1;
+  let showGuestInfo = false;
 
   if (id) {
     const { data, error } = await supabase
@@ -32,6 +35,7 @@ export default async function Home(props: Props) {
     if (data && !error) {
       guestNames = Array.isArray(data.guest_names) ? data.guest_names : [data.guest_names];
       passes = data.passes || 1;
+      showGuestInfo = true;
     }
   }
 

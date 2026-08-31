@@ -5,7 +5,9 @@ interface GuestInfoProps {
   names?: string[];
 }
 
-export default function GuestInfo({ passes = 2, names = ["Lola Pérez", "Tomás Pérez"] }: GuestInfoProps) {
+export default function GuestInfo({ passes = 1, names = [] }: GuestInfoProps) {
+  if (!names || names.length === 0) return null;
+
   return (
     <section className="relative w-full pt-20 pb-4 flex flex-col items-center overflow-hidden" id="guest-info">
 

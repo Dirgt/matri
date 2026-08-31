@@ -113,7 +113,18 @@ export default async function AdminReportPage() {
             <tbody className="divide-y divide-gray-100 text-sm">
               {rows.map((row) => (
                 <tr key={row.id} className={`hover:bg-gray-50 transition-colors ${!row.hasResponded ? 'bg-gray-50/50 text-gray-400' : ''}`}>
-                  <td className="p-4 font-mono text-xs">{row.urlId}</td>
+                  <td className="p-4 font-mono text-xs">
+                    <a 
+                      href={`https://bodask.vercel.app/?id=${row.urlId}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-[#5c6e64] hover:text-[#899c8f] hover:underline font-semibold inline-flex items-center gap-1"
+                      title="Abrir invitación"
+                    >
+                      <span>{row.urlId}</span>
+                      <span className="text-gray-400 text-[10px]">↗</span>
+                    </a>
+                  </td>
                   <td className="p-4">{row.allNames}</td>
                   <td className="p-4 text-center">{row.passes}</td>
                   <td className="p-4 font-medium">{row.confirmedNames}</td>
