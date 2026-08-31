@@ -1,26 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Parisienne&display=swap');
 @import "tailwindcss";
-
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-sage: #899c8f;
+  --color-sage-dark: #637669;
+  --color-cream: #f6f5ef;
+  --color-gold: #d6af6c;
+  --color-text: #4f5a54;
+  --color-white: #ffffff;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-sage: var(--color-sage);
+  --color-sage-dark: var(--color-sage-dark);
+  --color-cream: var(--color-cream);
+  --color-gold: var(--color-gold);
+  --color-text: var(--color-text);
+  
+  --font-script: "Parisienne", cursive;
+  --font-sans: var(--font-montserrat);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-cream);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+h1, h2, h3, .font-script {
+  font-family: var(--font-script);
+  font-weight: 400;
+}
+
+/* Utils for sections */
+.section-padding {
+  padding: 4rem 1rem;
+}
+@media (min-width: 768px) {
+  .section-padding {
+    padding: 6rem 2rem;
+  }
 }
