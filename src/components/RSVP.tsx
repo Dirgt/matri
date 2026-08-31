@@ -21,7 +21,7 @@ export default function RSVP({ urlId, guestNames = [] }: RSVPProps) {
     setIsOpen(true);
     setStep(1);
     setIsSuccess(false);
-    setSelectedGuests([]);
+    setSelectedGuests(guestNames && guestNames.length > 0 ? [...guestNames] : []);
     setCeremonyAttend(null);
     setReceptionAttend(null);
   };
@@ -90,19 +90,35 @@ export default function RSVP({ urlId, guestNames = [] }: RSVPProps) {
   };
 
   return (
-    <section className="relative w-full bg-[#eeeae3] pt-12 pb-24 flex flex-col items-center justify-center text-center px-4">
+    <section className="relative w-full bg-[#eeeae3] pt-14 pb-24 flex flex-col items-center justify-center text-center px-4">
       
-      <h2 className="font-script text-5xl md:text-6xl text-[#5c6e64] mb-2">
+      <h2 className="font-script text-5xl md:text-6xl text-[#5c6e64] mb-4">
         Confirmar Asistencia
       </h2>
+
+      {/* Nombres de los invitados en la sección */}
+      {guestNames && guestNames.length > 0 && (
+        <div className="flex flex-wrap justify-center items-center gap-2.5 mb-4 max-w-xl">
+          {guestNames.map((name, idx) => (
+            <div 
+              key={idx}
+              className="bg-white/90 border border-[#d6cfc5] px-5 py-2 rounded-full text-[#5c6e64] text-base md:text-lg font-medium shadow-sm"
+            >
+              {name}
+            </div>
+          ))}
+        </div>
+      )}
       
-      <p className="text-[#848484] mb-8 text-lg">
-        Es importante que confirmes tu asistencia
+      <p className="text-[#848484] mb-8 text-base md:text-lg max-w-md">
+        {guestNames && guestNames.length > 1
+          ? "Es muy importante que confirmen su asistencia"
+          : "Es importante que confirmes tu asistencia"}
       </p>
 
       <button 
         onClick={openModal}
-        className="px-10 py-3 rounded-full border border-gray-300 bg-white text-[#5c6e64] font-bold text-xs tracking-widest hover:bg-gray-50 transition-colors shadow-sm"
+        className="px-10 py-3.5 rounded-full border border-gray-300 bg-white text-[#5c6e64] font-bold text-xs tracking-widest hover:bg-gray-50 transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105 active:scale-95 cursor-pointer uppercase"
       >
         CONFIRMAR ASISTENCIA
       </button>
