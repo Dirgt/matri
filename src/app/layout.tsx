@@ -18,6 +18,11 @@ export const metadata: Metadata = {
   description: "Invitación de boda de Santi y Kate",
 };
 
+// Precarga del audio para que empiece a descargarse lo antes posible
+export const links = [
+  { rel: "preload", href: "/music/la-boda.mp3", as: "audio", type: "audio/mpeg" },
+];
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -25,6 +30,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
+      <head>
+        {/* Precarga del audio — el navegador empieza a descargarlo inmediatamente */}
+        <link rel="preload" href="/music/la-boda.mp3" as="audio" type="audio/mpeg" />
+      </head>
       <body
         className={`${parisienne.variable} ${montserrat.variable} antialiased`}
       >
