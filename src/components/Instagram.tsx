@@ -1,8 +1,6 @@
-import LottieAnimation from "./LottieAnimation";
-
 export default function Instagram() {
   return (
-    <section className="relative w-full h-[500px] flex items-center justify-center overflow-hidden">
+    <section className="relative w-full min-h-[520px] py-16 flex items-center justify-center overflow-hidden">
       
       {/* Background Image */}
       <div 
@@ -13,7 +11,7 @@ export default function Instagram() {
       />
       
       {/* Dark Overlay */}
-      <div className="absolute inset-0 bg-black/40" />
+      <div className="absolute inset-0 bg-black/45" />
 
       {/* Top Gold Wave Divider */}
       <div className="absolute top-0 left-0 w-full overflow-hidden leading-none z-10" style={{ transform: 'translateY(-50%)' }}>
@@ -22,29 +20,56 @@ export default function Instagram() {
         </svg>
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center text-center text-white px-4">
+      <div className="relative z-10 flex flex-col items-center justify-center text-center text-white px-4 max-w-2xl mx-auto">
         
-        <h2 className="font-script text-4xl md:text-5xl lg:text-6xl mb-2">
+        <h2 className="font-script text-4xl md:text-5xl lg:text-6xl mb-2 drop-shadow-md">
           Compartimos este día junto a vos
         </h2>
         
-        <p className="text-white/90 mb-10 text-sm md:text-base font-light">
+        <p className="text-white/90 mb-6 text-sm md:text-base font-light">
           Compartí tus fotos y videos de ese hermoso día
         </p>
 
-        <div className="mb-6 rounded-xl flex justify-center items-center">
-          <LottieAnimation animationPath="/lottie/img_instagram.json" className="w-20 h-20" />
+        {/* Google Photos Icon */}
+        <div className="mb-4 p-3.5 md:p-4 rounded-2xl bg-white/95 shadow-xl flex items-center justify-center hover:scale-105 transition-transform duration-300">
+          <svg viewBox="0 0 24 24" className="w-10 h-10 md:w-12 md:h-12" fill="none">
+            {/* Red - Top */}
+            <path d="M12 12V2.5A4.75 4.75 0 0 0 12 12Z" fill="#EA4335" />
+            {/* Yellow - Right */}
+            <path d="M12 12H21.5A4.75 4.75 0 0 0 12 12Z" fill="#FBBC04" />
+            {/* Green - Bottom */}
+            <path d="M12 12V21.5A4.75 4.75 0 0 0 12 12Z" fill="#34A853" />
+            {/* Blue - Left */}
+            <path d="M12 12H2.5A4.75 4.75 0 0 0 12 12Z" fill="#4285F4" />
+          </svg>
         </div>
 
-        <h3 className="font-script text-5xl md:text-6xl mb-10">
+        <h3 className="font-script text-4xl md:text-5xl mb-4 drop-shadow-sm">
           #santiykate
         </h3>
 
-        <button className="px-8 py-3 rounded-full bg-white text-[#899c8f] font-bold text-xs tracking-widest hover:bg-gray-100 transition-colors shadow-sm">
-          VER EN INSTAGRAM
-        </button>
+        {/* Mensaje cordial para invitar a subir las fotos */}
+        <p className="text-white/95 text-sm md:text-base font-light mb-8 max-w-md mx-auto leading-relaxed drop-shadow">
+          ¡Queremos revivir cada instante a través de tus ojos! Recordá subir aquí todas las fotos y videos que tomes durante la boda para que formen parte de nuestro álbum de recuerdos.
+        </p>
+
+        <a
+          href="https://photos.app.goo.gl/5VfqvCk7d8Zwe8Xo7"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full bg-white text-[#5c6e64] font-bold text-xs tracking-widest hover:bg-gray-100 hover:text-[#45544d] transition-all duration-300 shadow-md hover:shadow-xl hover:scale-105 active:scale-95"
+        >
+          <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none">
+            <path d="M12 12V2.5A4.75 4.75 0 0 0 12 12Z" fill="#EA4335" />
+            <path d="M12 12H21.5A4.75 4.75 0 0 0 12 12Z" fill="#FBBC04" />
+            <path d="M12 12V21.5A4.75 4.75 0 0 0 12 12Z" fill="#34A853" />
+            <path d="M12 12H2.5A4.75 4.75 0 0 0 12 12Z" fill="#4285F4" />
+          </svg>
+          SUBIR FOTOS AL ÁLBUM
+        </a>
 
       </div>
     </section>
   );
 }
+
