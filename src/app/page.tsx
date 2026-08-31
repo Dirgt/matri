@@ -26,16 +26,19 @@ export default async function Home(props: Props) {
   let showGuestInfo = false;
 
   if (id) {
+    const cleanId = decodeURIComponent(id).trim().toLowerCase();
     const { data, error } = await supabase
       .from('guests')
       .select('guest_names, passes')
-      .eq('url_id', id)
+      .eq('url_id', cleanId)
       .single();
       
     if (data && !error) {
       guestNames = Array.isArray(data.guest_names) ? data.guest_names : [data.guest_names];
       passes = data.passes || 1;
       showGuestInfo = true;
+    } else if (error) {
+      console.error("Error al consultar invitado:", error);
     }
   }
 
