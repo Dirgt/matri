@@ -27,9 +27,15 @@ body {
   overflow-x: hidden;
 }
 
-h1, h2, h3, .font-script {
+@layer base {
+  h1, h2, h3 {
+    font-family: var(--font-script);
+    font-weight: 400;
+  }
+}
+
+.font-script {
   font-family: var(--font-script);
-  font-weight: 400;
 }
 
 /* Utils for sections */

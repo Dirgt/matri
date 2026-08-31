@@ -24,7 +24,7 @@ export default function Gallery() {
           <div className="aspect-[4/3] bg-gray-200 mb-4 overflow-hidden relative">
              <div 
                className="absolute inset-0 bg-cover bg-center"
-               style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=600&q=80")' }}
+               style={{ backgroundImage: 'url("/foto-galeria-1.jpg")' }}
              />
           </div>
           <div className="h-12 bg-white"></div>
@@ -35,7 +35,7 @@ export default function Gallery() {
           <div className="aspect-[4/3] bg-gray-200 mb-4 overflow-hidden relative">
              <div 
                className="absolute inset-0 bg-cover bg-center"
-               style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=600&q=80")' }}
+               style={{ backgroundImage: 'url("/foto-galeria-2.jpg")' }}
              />
           </div>
           <div className="h-12 bg-white"></div>
@@ -46,7 +46,7 @@ export default function Gallery() {
           <div className="aspect-[4/3] bg-gray-200 mb-4 overflow-hidden relative">
              <div 
                className="absolute inset-0 bg-cover bg-center"
-               style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=600&q=80")' }}
+               style={{ backgroundImage: 'url("/foto-galeria-3.jpg")' }}
              />
           </div>
           <div className="h-12 bg-white"></div>

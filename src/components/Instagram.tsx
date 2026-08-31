@@ -22,7 +22,10 @@ export default function Instagram() {
 
       <div className="relative z-10 flex flex-col items-center justify-center text-center text-white px-4 max-w-2xl mx-auto">
         
-        <h2 className="font-sans text-2xl md:text-3xl lg:text-4xl font-light tracking-wide mb-2 drop-shadow-md">
+        <h2 
+          className="!font-sans text-2xl md:text-3xl lg:text-4xl font-light tracking-wide mb-2 drop-shadow-md"
+          style={{ fontFamily: 'var(--font-montserrat), sans-serif' }}
+        >
           Compartimos este día junto a vos
         </h2>
         
