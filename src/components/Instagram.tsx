@@ -22,7 +22,7 @@ export default function Instagram() {
 
       <div className="relative z-10 flex flex-col items-center justify-center text-center text-white px-4 max-w-2xl mx-auto">
         
-        <h2 className="font-script text-4xl md:text-5xl lg:text-6xl mb-2 drop-shadow-md">
+        <h2 className="font-sans text-2xl md:text-3xl lg:text-4xl font-light tracking-wide mb-2 drop-shadow-md">
           Compartimos este día junto a vos
         </h2>
         
@@ -30,9 +30,16 @@ export default function Instagram() {
           Compartí tus fotos y videos de ese hermoso día
         </p>
 
-        {/* Google Photos Icon */}
-        <div className="mb-4 p-3.5 md:p-4 rounded-2xl bg-white/95 shadow-xl flex items-center justify-center hover:scale-105 transition-transform duration-300">
-          <svg viewBox="0 0 24 24" className="w-10 h-10 md:w-12 md:h-12" fill="none">
+        {/* Google Photos Icon Link */}
+        <a 
+          href="https://photos.app.goo.gl/5VfqvCk7d8Zwe8Xo7"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Subir fotos al álbum de Google Fotos"
+          aria-label="Subir fotos al álbum de Google Fotos"
+          className="mb-4 p-3.5 md:p-4 rounded-2xl bg-white/95 shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer group"
+        >
+          <svg viewBox="0 0 24 24" className="w-10 h-10 md:w-12 md:h-12 group-hover:rotate-12 transition-transform duration-300" fill="none">
             {/* Red - Top */}
             <path d="M12 12V2.5A4.75 4.75 0 0 0 12 12Z" fill="#EA4335" />
             {/* Yellow - Right */}
@@ -42,7 +49,7 @@ export default function Instagram() {
             {/* Blue - Left */}
             <path d="M12 12H2.5A4.75 4.75 0 0 0 12 12Z" fill="#4285F4" />
           </svg>
-        </div>
+        </a>
 
         <h3 className="font-script text-4xl md:text-5xl mb-4 drop-shadow-sm">
           #santiykate

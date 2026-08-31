@@ -28,7 +28,7 @@ export default function EventDetails() {
 
           <div className="mb-8">
             <h4 className="text-[#899c8f] font-bold text-xl mb-2">Día</h4>
-            <p className="text-[#848484] text-[1.1rem]">Domingo 25 de octubre - 15 hs</p>
+            <p className="text-[#848484] text-[1.1rem]">Domingo 25 de octubre - 16 hs</p>
           </div>
 
           <div>
@@ -65,7 +65,7 @@ export default function EventDetails() {
 
           <div className="mb-8">
             <h4 className="text-[#899c8f] font-bold text-xl mb-2">Día</h4>
-            <p className="text-[#848484] text-[1.1rem]">Domingo 25 de octubre - 17 hs</p>
+            <p className="text-[#848484] text-[1.1rem]">Domingo 25 de octubre - 18 hs</p>
           </div>
 
           <div>
