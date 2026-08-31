@@ -14,8 +14,36 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "Santi & Kate - Nuestra Boda",
-  description: "Invitación de boda de Santi y Kate",
+  metadataBase: new URL("https://bodask.vercel.app"),
+  title: "Santi & Kate - ¡Nos Casamos! 💍",
+  description: "Te invitamos a celebrar nuestra boda este Domingo 25 de Octubre de 2026 en Chinauta. Toca aquí para ver los detalles y confirmar tu asistencia.",
+  openGraph: {
+    title: "Santi & Kate - ¡Nuestra Boda! 💍",
+    description: "Te invitamos a celebrar nuestra boda este Domingo 25 de Octubre de 2026. Toca para ver todos los detalles y confirmar tu asistencia.",
+    url: "https://bodask.vercel.app",
+    siteName: "Boda Santi & Kate",
+    locale: "es_CO",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Santi & Kate - Nuestra Boda",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Santi & Kate - ¡Nuestra Boda! 💍",
+    description: "Te invitamos a celebrar nuestra boda este Domingo 25 de Octubre de 2026 en Chinauta.",
+    images: ["/og-image.jpg"],
+  },
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/apple-icon.png",
+  },
 };
 
 // Precarga del audio para que empiece a descargarse lo antes posible
