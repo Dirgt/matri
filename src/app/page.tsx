@@ -24,12 +24,14 @@ export default async function Home(props: Props) {
   let guestNames: string[] = [];
   let passes = 1;
   let showGuestInfo = false;
+  let cleanUrlId: string | undefined = undefined;
+  let initialResponses: any[] = [];
 
   if (id) {
     const cleanId = decodeURIComponent(id).trim().toLowerCase();
     const { data, error } = await supabase
       .from('guests')
-      .select('guest_names, passes')
+      .select('url_id, guest_names, passes, rsvp_responses')
       .eq('url_id', cleanId)
       .single();
       
@@ -37,6 +39,8 @@ export default async function Home(props: Props) {
       guestNames = Array.isArray(data.guest_names) ? data.guest_names : [data.guest_names];
       passes = data.passes || 1;
       showGuestInfo = true;
+      cleanUrlId = data.url_id || cleanId;
+      initialResponses = data.rsvp_responses || [];
     } else if (error) {
       console.error("Error al consultar invitado:", error);
     }
@@ -73,7 +77,7 @@ export default async function Home(props: Props) {
         <EventDetails />
       </div>
       
-      <RSVP urlId={id} guestNames={guestNames} />
+      <RSVP urlId={cleanUrlId || id} guestNames={guestNames} initialResponses={initialResponses} />
       <Gallery />
       <PartyDetails />
       <Gifts />

@@ -8,9 +8,15 @@ import { Check, X } from "lucide-react";
 interface RSVPProps {
   urlId?: string;
   guestNames?: string[];
+  initialResponses?: Array<{
+    guests?: string[];
+    ceremony?: boolean;
+    reception?: boolean;
+    timestamp?: string;
+  }>;
 }
 
-export default function RSVP({ urlId, guestNames = [] }: RSVPProps) {
+export default function RSVP({ urlId, guestNames = [], initialResponses = [] }: RSVPProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [selectedGuests, setSelectedGuests] = useState<string[]>([]);
@@ -18,14 +24,24 @@ export default function RSVP({ urlId, guestNames = [] }: RSVPProps) {
   const [receptionAttend, setReceptionAttend] = useState<boolean | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [hasConfirmed, setHasConfirmed] = useState(initialResponses.length > 0);
 
   const openModal = () => {
     setIsOpen(true);
     setStep(1);
     setIsSuccess(false);
-    setSelectedGuests(guestNames.length === 1 ? [guestNames[0]] : []);
-    setCeremonyAttend(null);
-    setReceptionAttend(null);
+
+    // If there is an existing response, prefill; otherwise select all guest names by default
+    if (initialResponses.length > 0) {
+      const last = initialResponses[initialResponses.length - 1];
+      setSelectedGuests(last.guests && last.guests.length > 0 ? last.guests : [...guestNames]);
+      setCeremonyAttend(last.ceremony ?? null);
+      setReceptionAttend(last.reception ?? null);
+    } else {
+      setSelectedGuests([...guestNames]);
+      setCeremonyAttend(null);
+      setReceptionAttend(null);
+    }
   };
 
   const closeModal = () => setIsOpen(false);
@@ -64,8 +80,9 @@ export default function RSVP({ urlId, guestNames = [] }: RSVPProps) {
   };
 
   const handleSubmit = async () => {
-    if (!urlId) {
-      alert("Error: No se encontró el ID de invitado.");
+    const cleanUrlId = urlId ? decodeURIComponent(urlId).trim().toLowerCase() : '';
+    if (!cleanUrlId) {
+      alert("Error: No se encontró el enlace personalizado. Por favor abre el link de tu invitación.");
       return;
     }
     
@@ -78,18 +95,20 @@ export default function RSVP({ urlId, guestNames = [] }: RSVPProps) {
         timestamp: new Date().toISOString()
       };
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('guests')
         .update({ 
           rsvp_responses: [responseObj] 
         })
-        .eq('url_id', urlId);
+        .eq('url_id', cleanUrlId)
+        .select();
 
-      if (error) {
-        console.error(error);
-        alert("Hubo un error al confirmar. Por favor intenta de nuevo.");
+      if (error || !data || data.length === 0) {
+        console.error("Error al actualizar RSVP:", error, data);
+        alert("Hubo un error al guardar tu confirmación. Por favor intenta de nuevo.");
       } else {
         setIsSuccess(true);
+        setHasConfirmed(true);
       }
     } catch (e) {
       console.error(e);
@@ -120,17 +139,24 @@ export default function RSVP({ urlId, guestNames = [] }: RSVPProps) {
         </div>
       )}
       
-      <p className="text-[#848484] mb-8 text-base md:text-lg max-w-md">
-        {guestNames && guestNames.length > 1
-          ? "Es muy importante que confirmen su asistencia"
-          : "Es importante que confirmes tu asistencia"}
-      </p>
+      {hasConfirmed ? (
+        <div className="mb-6 inline-flex items-center gap-2 bg-[#899c8f]/15 border border-[#899c8f]/30 px-4 py-1.5 rounded-full text-[#3f5046] text-sm font-medium">
+          <Check size={16} className="text-[#3b7156]" />
+          <span>¡Ya recibimos tu confirmación! Puedes modificarla si lo deseas.</span>
+        </div>
+      ) : (
+        <p className="text-[#848484] mb-8 text-base md:text-lg max-w-md">
+          {guestNames && guestNames.length > 1
+            ? "Es muy importante que confirmen su asistencia"
+            : "Es importante que confirmes tu asistencia"}
+        </p>
+      )}
 
       <button 
         onClick={openModal}
         className="px-10 py-3.5 rounded-full border border-gray-300 bg-white text-[#5c6e64] font-bold text-xs tracking-widest hover:bg-gray-50 transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105 active:scale-95 cursor-pointer uppercase"
       >
-        CONFIRMAR ASISTENCIA
+        {hasConfirmed ? "MODIFICAR ASISTENCIA" : "CONFIRMAR ASISTENCIA"}
       </button>
 
       {/* MODAL */}
