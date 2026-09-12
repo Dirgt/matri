@@ -118,6 +118,9 @@ export default function RSVP({ urlId, guestNames = [], initialResponses = [] }: 
     }
   };
 
+  const deadline = new Date('2026-10-01T00:00:00-05:00');
+  const isPastDeadline = new Date() >= deadline;
+
   return (
     <section className="relative w-full bg-[#eeeae3] pt-14 pb-24 flex flex-col items-center justify-center text-center px-4">
       
@@ -154,10 +157,23 @@ export default function RSVP({ urlId, guestNames = [], initialResponses = [] }: 
 
       <button 
         onClick={openModal}
-        className="px-10 py-3.5 rounded-full border border-gray-300 bg-white text-[#5c6e64] font-bold text-xs tracking-widest hover:bg-gray-50 transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105 active:scale-95 cursor-pointer uppercase"
+        disabled={isPastDeadline}
+        className={`px-10 py-3.5 rounded-full border border-gray-300 font-bold text-xs tracking-widest uppercase transition-all duration-300 shadow-sm ${
+          isPastDeadline 
+            ? "bg-gray-200 text-gray-500 opacity-60 cursor-not-allowed" 
+            : "bg-white text-[#5c6e64] hover:bg-gray-50 hover:shadow-md hover:scale-105 active:scale-95 cursor-pointer"
+        }`}
       >
-        {hasConfirmed ? "MODIFICAR ASISTENCIA" : "CONFIRMAR ASISTENCIA"}
+        {isPastDeadline 
+          ? "Fecha límite alcanzada"
+          : hasConfirmed ? "MODIFICAR ASISTENCIA" : "CONFIRMAR ASISTENCIA"}
       </button>
+
+      {isPastDeadline && (
+        <p className="text-rose-500 text-sm mt-4 font-medium">
+          La fecha límite para confirmar asistencia ha expirado.
+        </p>
+      )}
 
       {/* MODAL */}
       {isOpen && (
