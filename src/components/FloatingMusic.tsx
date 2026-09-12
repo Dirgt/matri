@@ -118,9 +118,16 @@ export default function FloatingMusic() {
               <div className="w-24 h-[1px] bg-[#d6af6c]/60 mx-auto mb-6" />
 
               {/* Subtítulo de la música */}
-              <p className="text-white/90 text-sm md:text-base font-light italic mb-8 max-w-sm mx-auto">
+              <p className="text-white/90 text-sm md:text-base font-light italic mb-4 max-w-sm mx-auto">
                 La música de fondo es parte de la experiencia
               </p>
+
+              {/* Fecha límite de confirmación */}
+              <div className="bg-white/5 border border-white/10 rounded-xl py-3 px-5 mb-8 mx-auto inline-block backdrop-blur-sm">
+                <p className="text-white/95 text-sm md:text-base font-medium">
+                  Fecha límite de confirmación: <span className="text-[#c1a073] font-bold">1 de octubre del 2026</span>
+                </p>
+              </div>
 
               {/* Botones de acción */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5">
