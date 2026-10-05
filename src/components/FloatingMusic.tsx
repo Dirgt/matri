@@ -125,7 +125,7 @@ export default function FloatingMusic() {
               {/* Fecha límite de confirmación */}
               <div className="bg-white/5 border border-white/10 rounded-xl py-3 px-5 mb-8 mx-auto inline-block backdrop-blur-sm">
                 <p className="text-white/95 text-sm md:text-base font-medium">
-                  Fecha límite de confirmación: <span className="text-[#c1a073] font-bold">4 de octubre del 2026</span>
+                  Fecha límite de confirmación: <span className="text-[#c1a073] font-bold">5 de octubre del 2026</span>
                 </p>
               </div>
 
