@@ -118,7 +118,7 @@ export default function RSVP({ urlId, guestNames = [], initialResponses = [] }: 
     }
   };
 
-  const deadline = new Date('2026-10-04T00:00:00-05:00');
+  const deadline = new Date('2026-10-05T23:59:59-05:00');
   const isPastDeadline = new Date() >= deadline;
 
   return (
