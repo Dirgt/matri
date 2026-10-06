@@ -528,19 +528,24 @@ export default function AdminReportClient({ initialGuests }: Props) {
                   {/* Invitados */}
                   <td className="p-3.5 md:p-4 font-medium text-gray-800">
                     <div className="flex flex-col gap-0.5">
-                      {row.namesList.map((name, idx) => (
-                        <span key={idx} className="flex items-center flex-wrap gap-1">
-                          <span>{name}</span>
-                          <span className="flex items-center gap-0.5 opacity-80">
-                            {isChild(name) && <span title="Niño/a (Menú Infantil)" className="text-[13px]">🧒</span>}
-                            {isNoLodging(name) ? (
-                              <span title="No se hospeda" className="text-[13px]">🚗</span>
-                            ) : (
-                              <span title="Se hospeda" className="text-[13px]">🛏️</span>
-                            )}
+                      {row.namesList.map((name, idx) => {
+                        const isNotAttending = row.hasResponded && !row.respondedGuests.includes(name);
+                        return (
+                          <span key={idx} className="flex items-center flex-wrap gap-1">
+                            <span className={isNotAttending ? "line-through text-gray-400" : ""}>{name}</span>
+                            <span className="flex items-center gap-0.5 opacity-80">
+                              {isChild(name) && <span title="Niño/a (Menú Infantil)" className="text-[13px]">🧒</span>}
+                              {isNotAttending ? (
+                                <span title="No asiste" className="text-[13px]">❌</span>
+                              ) : isNoLodging(name) ? (
+                                <span title="No se hospeda" className="text-[13px]">🚗</span>
+                              ) : (
+                                <span title="Se hospeda" className="text-[13px]">🛏️</span>
+                              )}
+                            </span>
                           </span>
-                        </span>
-                      ))}
+                        );
+                      })}
                     </div>
                   </td>
 
