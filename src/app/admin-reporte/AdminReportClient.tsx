@@ -174,7 +174,9 @@ export default function AdminReportClient({ initialGuests }: Props) {
       "briyith jimenez",
       "alexander pira",
       "jonathan morales",
-      "maria quintero"
+      "maria quintero",
+      "juan carlos ochoa",
+      "miryam chinchilla"
     ].some(person => normalized.includes(person));
   };
 
