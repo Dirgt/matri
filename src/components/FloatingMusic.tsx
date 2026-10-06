@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Music, Volume2, VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function FloatingMusic() {
+export default function FloatingMusic({ isBlocked = false }: { isBlocked?: boolean }) {
   const [isOpen, setIsOpen] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -17,6 +17,7 @@ export default function FloatingMusic() {
   }, []);
 
   const handleEnterWithMusic = () => {
+    if (isBlocked) return;
     setIsOpen(false);
     const audio = audioRef.current;
     if (audio) {
@@ -34,6 +35,7 @@ export default function FloatingMusic() {
   };
 
   const handleEnterWithoutMusic = () => {
+    if (isBlocked) return;
     setIsOpen(false);
     setIsPlaying(false);
   };
@@ -129,24 +131,32 @@ export default function FloatingMusic() {
                 </p>
               </div>
 
-              {/* Botones de acción */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5">
-                <button
-                  onClick={handleEnterWithMusic}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-[#c1a073] hover:bg-[#b08f62] text-white font-bold text-xs md:text-sm tracking-wider uppercase shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
-                >
-                  <Volume2 size={18} />
-                  <span>INGRESAR CON MÚSICA</span>
-                </button>
+              {/* Contenido dinámico según el bloqueo */}
+              {isBlocked ? (
+                <div className="bg-white/10 border border-white/20 rounded-2xl p-6 mx-auto backdrop-blur-sm shadow-inner">
+                  <p className="text-white font-medium text-base md:text-lg leading-relaxed">
+                    Como no confirmaste antes del tiempo establecido, la invitación ya no se encuentra disponible.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5">
+                  <button
+                    onClick={handleEnterWithMusic}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-[#c1a073] hover:bg-[#b08f62] text-white font-bold text-xs md:text-sm tracking-wider uppercase shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+                  >
+                    <Volume2 size={18} />
+                    <span>INGRESAR CON MÚSICA</span>
+                  </button>
 
-                <button
-                  onClick={handleEnterWithoutMusic}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-white/15 hover:bg-white/25 text-white/90 font-semibold text-xs md:text-sm tracking-wider uppercase border border-white/25 shadow-md hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
-                >
-                  <VolumeX size={18} />
-                  <span>INGRESAR SIN MÚSICA</span>
-                </button>
-              </div>
+                  <button
+                    onClick={handleEnterWithoutMusic}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-white/15 hover:bg-white/25 text-white/90 font-semibold text-xs md:text-sm tracking-wider uppercase border border-white/25 shadow-md hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+                  >
+                    <VolumeX size={18} />
+                    <span>INGRESAR SIN MÚSICA</span>
+                  </button>
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}

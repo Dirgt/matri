@@ -15,7 +15,12 @@ import {
   Users, 
   UserCheck, 
   UserX,
-  Sparkles
+  Sparkles,
+  Smile,
+  User,
+  Utensils,
+  BedDouble,
+  Car
 } from "lucide-react";
 
 export interface GuestRecord {
@@ -146,12 +151,43 @@ export default function AdminReportClient({ initialGuests }: Props) {
     }
   };
 
+  // Helper to identify children
+  const isChild = (name: string) => {
+    const normalized = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    return [
+      "emiliando fontecha",
+      "emiliano fontecha",
+      "antonia pulido",
+      "alejandro pulido",
+      "salvador gutierrez",
+      "chritine garzon",
+      "christine garzon",
+      "emma garzon"
+    ].some(child => normalized.includes(child));
+  };
+
+  // Helper to identify people not staying
+  const isNoLodging = (name: string) => {
+    const normalized = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    return [
+      "alejandro leiva",
+      "briyith jimenez",
+      "alexander pira",
+      "jonathan morales",
+      "maria quintero"
+    ].some(person => normalized.includes(person));
+  };
+
   // Calculate metrics
   let totalPasses = 0;
   let totalCeremonyYes = 0;
   let totalReceptionYes = 0;
   let totalPendingPasses = 0;
   let totalDeclinedPasses = 0;
+  let totalCateringAdults = 0;
+  let totalCateringChildren = 0;
+  let totalLodgingYes = 0;
+  let totalNoLodgingYes = 0;
 
   const processedRows = guests.map((guest) => {
     totalPasses += guest.passes || 0;
@@ -177,6 +213,29 @@ export default function AdminReportClient({ initialGuests }: Props) {
       if (last.reception) {
         totalReceptionYes += respondedGuests.length;
       }
+
+      // Calculate Catering (Dinner) for Reception attendees
+      if (last.reception) {
+        respondedGuests.forEach(name => {
+          if (isChild(name)) {
+            totalCateringChildren++;
+          } else {
+            totalCateringAdults++;
+          }
+        });
+      }
+
+      // Calculate Lodging for ANY confirmed attendee
+      if (last.ceremony || last.reception) {
+        respondedGuests.forEach(name => {
+          if (isNoLodging(name)) {
+            totalNoLodgingYes++;
+          } else {
+            totalLodgingYes++;
+          }
+        });
+      }
+
       if (!last.ceremony && !last.reception) {
         isFullyDeclined = true;
         totalDeclinedPasses += guest.passes || 0;
@@ -240,79 +299,121 @@ export default function AdminReportClient({ initialGuests }: Props) {
     <main className="min-h-screen bg-[#f7f4ed] p-4 md:p-8 font-sans text-[#5c6e64]">
       <div className="max-w-6xl mx-auto">
         
-        {/* Header */}
-        <header className="mb-8 text-center relative">
-          <h1 className="font-script text-5xl md:text-6xl text-[#3b7156] mb-1">
-            Reporte de Asistencia
-          </h1>
-          <p className="text-[#899c8f] text-sm tracking-widest uppercase font-semibold">
-            Santi & Kate &bull; 25 de Octubre 2026
-          </p>
-
-          <div className="mt-4 flex items-center justify-center gap-3">
-            <button
-              onClick={refreshData}
-              disabled={isRefreshing}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-gray-200 text-[#5c6e64] hover:bg-[#899c8f] hover:text-white transition-all text-xs font-semibold shadow-sm cursor-pointer disabled:opacity-50"
-            >
-              <RefreshCw size={14} className={isRefreshing ? "animate-spin" : ""} />
-              <span>{isRefreshing ? "Actualizando..." : "Actualizar Datos"}</span>
-            </button>
-            <a
-              href="https://bodask.vercel.app"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-gray-200 text-[#5c6e64] hover:bg-gray-100 transition-all text-xs font-semibold shadow-sm"
-            >
-              <span>Ver Web Principal</span>
-              <ExternalLink size={13} />
-            </a>
-          </div>
-        </header>
-
-        {/* Metrics Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
-          <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
-            <div className="w-10 h-10 rounded-full bg-[#5c6e64]/10 text-[#5c6e64] flex items-center justify-center mb-2">
-              <Users size={20} />
+        {/* Resumen General */}
+        <div className="mb-8">
+          <h2 className="text-xl font-script text-[#3b7156] mb-4 flex items-center gap-2">
+            <Users size={22} /> Resumen General
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 rounded-full bg-[#5c6e64]/10 text-[#5c6e64] flex items-center justify-center mb-2">
+                <Users size={20} />
+              </div>
+              <span className="text-3xl md:text-4xl font-bold text-[#5c6e64]">{totalPasses}</span>
+              <span className="text-[11px] uppercase tracking-wider text-gray-500 font-medium mt-1">
+                Pases Totales
+              </span>
             </div>
-            <span className="text-3xl md:text-4xl font-bold text-[#5c6e64]">{totalPasses}</span>
-            <span className="text-[11px] uppercase tracking-wider text-gray-500 font-medium mt-1">
-              Pases Totales
-            </span>
-          </div>
 
-          <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
-            <div className="w-10 h-10 rounded-full bg-[#3b7156]/10 text-[#3b7156] flex items-center justify-center mb-2">
-              <UserCheck size={20} />
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 rounded-full bg-[#3b7156]/10 text-[#3b7156] flex items-center justify-center mb-2">
+                <UserCheck size={20} />
+              </div>
+              <span className="text-3xl md:text-4xl font-bold text-[#3b7156]">{totalCeremonyYes}</span>
+              <span className="text-[11px] uppercase tracking-wider text-gray-500 font-medium mt-1">
+                Ceremonia (Sí)
+              </span>
             </div>
-            <span className="text-3xl md:text-4xl font-bold text-[#3b7156]">{totalCeremonyYes}</span>
-            <span className="text-[11px] uppercase tracking-wider text-gray-500 font-medium mt-1">
-              Ceremonia (Sí)
-            </span>
-          </div>
 
-          <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
-            <div className="w-10 h-10 rounded-full bg-[#899c8f]/15 text-[#899c8f] flex items-center justify-center mb-2">
-              <Sparkles size={20} />
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 rounded-full bg-[#899c8f]/15 text-[#899c8f] flex items-center justify-center mb-2">
+                <Sparkles size={20} />
+              </div>
+              <span className="text-3xl md:text-4xl font-bold text-[#899c8f]">{totalReceptionYes}</span>
+              <span className="text-[11px] uppercase tracking-wider text-gray-500 font-medium mt-1">
+                Recepción (Sí)
+              </span>
             </div>
-            <span className="text-3xl md:text-4xl font-bold text-[#899c8f]">{totalReceptionYes}</span>
-            <span className="text-[11px] uppercase tracking-wider text-gray-500 font-medium mt-1">
-              Recepción (Sí)
-            </span>
-          </div>
 
-          <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
-            <div className="w-10 h-10 rounded-full bg-[#d6af6c]/15 text-[#c1a073] flex items-center justify-center mb-2">
-              <Clock size={20} />
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 rounded-full bg-[#d6af6c]/15 text-[#c1a073] flex items-center justify-center mb-2">
+                <Clock size={20} />
+              </div>
+              <span className="text-3xl md:text-4xl font-bold text-[#c1a073]">{totalPendingPasses}</span>
+              <span className="text-[11px] uppercase tracking-wider text-gray-500 font-medium mt-1">
+                Pases Pendientes
+              </span>
             </div>
-            <span className="text-3xl md:text-4xl font-bold text-[#c1a073]">{totalPendingPasses}</span>
-            <span className="text-[11px] uppercase tracking-wider text-gray-500 font-medium mt-1">
-              Pases Pendientes
-            </span>
+
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mb-2">
+                <UserX size={20} />
+              </div>
+              <span className="text-3xl md:text-4xl font-bold text-rose-600">{totalDeclinedPasses}</span>
+              <span className="text-[11px] uppercase tracking-wider text-gray-500 font-medium mt-1">
+                No Asisten
+              </span>
+            </div>
           </div>
         </div>
 
+        {/* Logística */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8">
+          
+          {/* Catering */}
+          <div className="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100">
+            <h2 className="text-xl font-script text-[#3b7156] mb-4 flex items-center gap-2">
+              <Utensils size={20} /> Catering (Cena)
+            </h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gray-50 p-4 rounded-xl flex flex-col items-center justify-center text-center border border-gray-100">
+                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mb-2">
+                  <User size={16} />
+                </div>
+                <span className="text-2xl font-bold text-indigo-600">{totalCateringAdults}</span>
+                <span className="text-[10px] uppercase tracking-wider text-gray-500 font-medium mt-1">
+                  Menú Adultos
+                </span>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-xl flex flex-col items-center justify-center text-center border border-gray-100">
+                <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center mb-2">
+                  <Smile size={16} />
+                </div>
+                <span className="text-2xl font-bold text-teal-600">{totalCateringChildren}</span>
+                <span className="text-[10px] uppercase tracking-wider text-gray-500 font-medium mt-1">
+                  Menú Niños
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Hospedaje */}
+          <div className="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100">
+            <h2 className="text-xl font-script text-[#3b7156] mb-4 flex items-center gap-2">
+              <BedDouble size={20} /> Hospedaje
+            </h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gray-50 p-4 rounded-xl flex flex-col items-center justify-center text-center border border-gray-100">
+                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-2">
+                  <BedDouble size={16} />
+                </div>
+                <span className="text-2xl font-bold text-emerald-600">{totalLodgingYes}</span>
+                <span className="text-[10px] uppercase tracking-wider text-gray-500 font-medium mt-1">
+                  Se Hospedan
+                </span>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-xl flex flex-col items-center justify-center text-center border border-gray-100">
+                <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-2">
+                  <Car size={16} />
+                </div>
+                <span className="text-2xl font-bold text-amber-600">{totalNoLodgingYes}</span>
+                <span className="text-[10px] uppercase tracking-wider text-gray-500 font-medium mt-1">
+                  No Se Hospedan
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
         {/* Controls: Search & Tabs */}
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Search bar */}
@@ -424,7 +525,21 @@ export default function AdminReportClient({ initialGuests }: Props) {
 
                   {/* Invitados */}
                   <td className="p-3.5 md:p-4 font-medium text-gray-800">
-                    {row.allNamesStr}
+                    <div className="flex flex-col gap-0.5">
+                      {row.namesList.map((name, idx) => (
+                        <span key={idx} className="flex items-center flex-wrap gap-1">
+                          <span>{name}</span>
+                          <span className="flex items-center gap-0.5 opacity-80">
+                            {isChild(name) && <span title="Niño/a (Menú Infantil)" className="text-[13px]">🧒</span>}
+                            {isNoLodging(name) ? (
+                              <span title="No se hospeda" className="text-[13px]">🚗</span>
+                            ) : (
+                              <span title="Se hospeda" className="text-[13px]">🛏️</span>
+                            )}
+                          </span>
+                        </span>
+                      ))}
+                    </div>
                   </td>
 
                   {/* Pases */}
@@ -438,9 +553,21 @@ export default function AdminReportClient({ initialGuests }: Props) {
                   <td className="p-3.5 md:p-4">
                     {row.hasResponded ? (
                       row.respondedGuests.length > 0 ? (
-                        <span className="text-[#3b7156] font-medium">
-                          {row.confirmedNamesStr}
-                        </span>
+                        <div className="flex flex-col gap-0.5 text-[#3b7156] font-medium">
+                          {row.respondedGuests.map((name, idx) => (
+                            <span key={idx} className="flex items-center flex-wrap gap-1">
+                              <span>{name}</span>
+                              <span className="flex items-center gap-0.5 opacity-80">
+                                {isChild(name) && <span title="Niño/a (Menú Infantil)" className="text-[13px]">🧒</span>}
+                                {isNoLodging(name) ? (
+                                  <span title="No se hospeda" className="text-[13px]">🚗</span>
+                                ) : (
+                                  <span title="Se hospeda" className="text-[13px]">🛏️</span>
+                                )}
+                              </span>
+                            </span>
+                          ))}
+                        </div>
                       ) : (
                         <span className="text-rose-600 font-medium">Ninguno</span>
                       )
