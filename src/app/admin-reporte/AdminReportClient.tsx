@@ -20,7 +20,8 @@ import {
   User,
   Utensils,
   BedDouble,
-  Car
+  Car,
+  Info
 } from "lucide-react";
 
 export interface GuestRecord {
@@ -414,6 +415,18 @@ export default function AdminReportClient({ initialGuests }: Props) {
                 </span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Info Note */}
+        <div className="bg-[#5c6e64]/5 border border-[#5c6e64]/20 rounded-xl p-4 mb-8 flex items-start gap-3">
+          <Info className="text-[#5c6e64] shrink-0 mt-0.5" size={20} />
+          <div className="text-sm text-[#5c6e64]">
+            <p className="font-semibold mb-1">Nota sobre los cálculos:</p>
+            <p className="opacity-90 leading-relaxed">
+              El total de <strong>Menú Adultos</strong> incluye tanto a los adultos que se hospedan como a los que <strong>no se hospedan</strong>. 
+              Es decir, todas las personas mayores confirmadas para la cena tienen su plato asegurado, sin importar si duermen en el lugar o no.
+            </p>
           </div>
         </div>
         {/* Controls: Search & Tabs */}
