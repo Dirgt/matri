@@ -25,7 +25,8 @@ import {
   ChevronDown,
   ChevronUp,
   HelpCircle,
-  ArrowRight
+  ArrowRight,
+  Leaf
 } from "lucide-react";
 
 export interface GuestRecord {
@@ -50,8 +51,9 @@ export default function AdminReportClient({ initialGuests }: Props) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterTab, setFilterTab] = useState<"all" | "confirmed" | "declined" | "pending" | "no-lodging" | "lodging">("all");
+  const [filterTab, setFilterTab] = useState<"all" | "confirmed" | "declined" | "pending" | "no-lodging" | "lodging" | "vegetarian" | "children">("all");
   const [showStayingList, setShowStayingList] = useState<boolean>(false);
+  const [showChildrenList, setShowChildrenList] = useState<boolean>(false);
 
   // State for manual edit modal
   const [editingGuest, setEditingGuest] = useState<GuestRecord | null>(null);
@@ -172,6 +174,14 @@ export default function AdminReportClient({ initialGuests }: Props) {
     ].some(child => normalized.includes(child));
   };
 
+  // Helper to identify vegetarian guests
+  const isVegetarian = (name: string) => {
+    const normalized = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    return [
+      "angie burgos"
+    ].some(person => normalized.includes(person));
+  };
+
   // Helper to identify people not staying
   const isNoLodging = (name: string) => {
     const normalized = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
@@ -194,7 +204,8 @@ export default function AdminReportClient({ initialGuests }: Props) {
   let totalReceptionYes = 0;
   let totalPendingPasses = 0;
   let totalDeclinedPasses = 0;
-  let totalCateringAdults = 0;
+  let totalCateringStandardAdults = 0;
+  let totalCateringVegetarian = 0;
   let totalCateringChildren = 0;
   let totalLodgingYes = 0;
   let totalNoLodgingYes = 0;
@@ -203,6 +214,8 @@ export default function AdminReportClient({ initialGuests }: Props) {
   let totalNoLodgingAdults = 0;
   let totalNoLodgingChildren = 0;
 
+  const vegetarianPeople: Array<{ name: string; url_id: string }> = [];
+  const childrenPeople: Array<{ name: string; url_id: string }> = [];
   const noLodgingPeople: Array<{ name: string; url_id: string; isChild: boolean }> = [];
   const lodgingPeople: Array<{ name: string; url_id: string; isChild: boolean }> = [];
 
@@ -236,8 +249,12 @@ export default function AdminReportClient({ initialGuests }: Props) {
         respondedGuests.forEach(name => {
           if (isChild(name)) {
             totalCateringChildren++;
+            childrenPeople.push({ name, url_id: guest.url_id });
+          } else if (isVegetarian(name)) {
+            totalCateringVegetarian++;
+            vegetarianPeople.push({ name, url_id: guest.url_id });
           } else {
-            totalCateringAdults++;
+            totalCateringStandardAdults++;
           }
         });
       }
@@ -299,9 +316,13 @@ export default function AdminReportClient({ initialGuests }: Props) {
       isFullyDeclined,
       timestamp,
       hasNoLodging: respondedGuests.some(name => isNoLodging(name)),
-      hasLodging: respondedGuests.some(name => !isNoLodging(name))
+      hasLodging: respondedGuests.some(name => !isNoLodging(name)),
+      hasVegetarian: respondedGuests.some(name => isVegetarian(name)),
+      hasChildren: respondedGuests.some(name => isChild(name))
     };
   });
+
+  const totalCateringAdults = totalCateringStandardAdults + totalCateringVegetarian;
 
   // Filtered rows
   const filteredRows = processedRows.filter((row) => {
@@ -329,6 +350,12 @@ export default function AdminReportClient({ initialGuests }: Props) {
     }
     if (filterTab === "lodging") {
       return row.hasResponded && (row.ceremonyStatus === "yes" || row.receptionStatus === "yes") && row.respondedGuests.some(name => !isNoLodging(name));
+    }
+    if (filterTab === "vegetarian") {
+      return row.hasResponded && row.respondedGuests.some(name => isVegetarian(name));
+    }
+    if (filterTab === "children") {
+      return row.hasResponded && row.respondedGuests.some(name => isChild(name));
     }
     return true;
   });
@@ -423,19 +450,23 @@ export default function AdminReportClient({ initialGuests }: Props) {
                     {totalReceptionYes} Platos
                   </span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 my-2">
-                  <div className="bg-indigo-50/50 p-2.5 rounded-xl text-center border border-indigo-100">
-                    <span className="text-2xl font-bold text-indigo-700 block">{totalCateringAdults}</span>
-                    <span className="text-[10px] uppercase tracking-wider text-indigo-600 font-semibold">Adultos</span>
+                <div className="grid grid-cols-3 gap-1.5 my-2">
+                  <div className="bg-indigo-50/50 p-2 rounded-xl text-center border border-indigo-100">
+                    <span className="text-xl font-bold text-indigo-700 block">{totalCateringStandardAdults}</span>
+                    <span className="text-[9px] uppercase tracking-wider text-indigo-600 font-semibold">Tradicional</span>
                   </div>
-                  <div className="bg-teal-50/50 p-2.5 rounded-xl text-center border border-teal-100">
-                    <span className="text-2xl font-bold text-teal-700 block">{totalCateringChildren}</span>
-                    <span className="text-[10px] uppercase tracking-wider text-teal-600 font-semibold">Niños</span>
+                  <div className="bg-emerald-50/60 p-2 rounded-xl text-center border border-emerald-200">
+                    <span className="text-xl font-bold text-emerald-700 block">{totalCateringVegetarian}</span>
+                    <span className="text-[9px] uppercase tracking-wider text-emerald-700 font-semibold">Vegetariano</span>
+                  </div>
+                  <div className="bg-teal-50/50 p-2 rounded-xl text-center border border-teal-100">
+                    <span className="text-xl font-bold text-teal-700 block">{totalCateringChildren}</span>
+                    <span className="text-[9px] uppercase tracking-wider text-teal-600 font-semibold">Niños</span>
                   </div>
                 </div>
               </div>
               <p className="text-[11px] text-gray-500 mt-2 pt-2 border-t border-gray-100 italic">
-                ✨ Todos los confirmados a la fiesta tienen cena asegurada.
+                🥗 Angie Burgos (vegetariana) y {totalCateringChildren} niños con menú infantil.
               </p>
             </div>
 
@@ -500,13 +531,118 @@ export default function AdminReportClient({ initialGuests }: Props) {
             </div>
           </div>
 
+          {/* Desglose Detallado de Menús de Cena: Vegetariano e Infantil */}
+          <div className="bg-indigo-50/40 border border-indigo-200/80 rounded-2xl p-5 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+              <div className="flex items-center gap-2 text-indigo-950 font-bold text-sm">
+                <Utensils size={18} className="text-indigo-600" />
+                <span>Desglose de Menús Especiales de Cena ({totalCateringVegetarian + totalCateringChildren} platos especiales):</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setFilterTab(filterTab === "vegetarian" ? "all" : "vegetarian")}
+                  className={`text-xs font-semibold px-2.5 py-1 rounded-lg transition cursor-pointer shadow-xs ${
+                    filterTab === "vegetarian" ? "bg-emerald-700 text-white" : "bg-emerald-600 text-white hover:bg-emerald-700"
+                  }`}
+                >
+                  {filterTab === "vegetarian" ? "Quitar filtro" : "Ver Vegetariano 🥗"}
+                </button>
+                <button
+                  onClick={() => setFilterTab(filterTab === "children" ? "all" : "children")}
+                  className={`text-xs font-semibold px-2.5 py-1 rounded-lg transition cursor-pointer shadow-xs ${
+                    filterTab === "children" ? "bg-teal-700 text-white" : "bg-teal-600 text-white hover:bg-teal-700"
+                  }`}
+                >
+                  {filterTab === "children" ? "Quitar filtro" : "Ver 6 Niños 🧒"}
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Sección Menú Vegetariano */}
+              <div className="bg-white p-4 rounded-xl border border-emerald-200 shadow-2xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
+                      <Leaf size={14} className="text-emerald-600" /> Menú Vegetariano ({totalCateringVegetarian} plato)
+                    </span>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
+                      Adulto Especial
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Invitada confirmada con plato vegetariano especial en la cena:
+                  </p>
+                  {vegetarianPeople.map((p, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => {
+                        setSearchQuery(p.name);
+                        setFilterTab("all");
+                      }}
+                      className="flex items-center justify-between p-2.5 rounded-lg bg-emerald-50/60 border border-emerald-200/80 hover:bg-emerald-100/70 transition cursor-pointer group"
+                      title="Clic para buscar en la tabla"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">🥗</span>
+                        <div>
+                          <span className="text-xs font-bold text-gray-800 block group-hover:text-emerald-800">{p.name}</span>
+                          <span className="text-[10px] text-gray-400 font-mono block">{p.url_id}</span>
+                        </div>
+                      </div>
+                      <span className="text-[11px] font-semibold text-emerald-700 bg-white px-2 py-0.5 rounded-md border border-emerald-200">
+                        Plato Vegetariano
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sección Menú Niños */}
+              <div className="bg-white p-4 rounded-xl border border-teal-200 shadow-2xs">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-teal-800 flex items-center gap-1.5">
+                    <Smile size={14} className="text-teal-600" /> Menú Infantil ({totalCateringChildren} niños)
+                  </span>
+                  <span className="text-[10px] bg-teal-100 text-teal-800 font-bold px-2 py-0.5 rounded-full">
+                    Plato Infantil
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mb-2">
+                  Los {totalCateringChildren} niños confirmados con menú infantil:
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-48 overflow-y-auto">
+                  {childrenPeople.map((p, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => {
+                        setSearchQuery(p.name);
+                        setFilterTab("all");
+                      }}
+                      className="flex items-center justify-between p-1.5 px-2 rounded-lg bg-teal-50/50 border border-teal-100 hover:bg-teal-100/60 transition cursor-pointer group"
+                      title="Clic para buscar en la tabla"
+                    >
+                      <div className="min-w-0">
+                        <span className="text-xs font-semibold text-gray-800 block truncate group-hover:text-teal-800">{p.name}</span>
+                        <span className="text-[9px] text-gray-400 font-mono block truncate">{p.url_id}</span>
+                      </div>
+                      <span className="text-[10px] text-teal-700 font-bold shrink-0 ml-1">
+                        🧒
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Explicación & Ecuación Visual */}
           <div className="bg-[#5c6e64]/5 border border-[#5c6e64]/20 rounded-2xl p-5 mb-6">
             <div className="flex items-center gap-2 text-[#3b7156] font-bold text-sm mb-2">
               <HelpCircle size={18} /> ¿Por qué la cuenta de Comida ({totalReceptionYes}) es diferente a la de Hospedaje ({totalLodgingYes})?
             </div>
             <p className="text-xs text-gray-600 leading-relaxed mb-4">
-              La diferencia se debe a que <strong>todas las {totalReceptionYes} personas confirmadas para la recepción tienen su cena asegurada</strong> ({totalCateringAdults} adultos y {totalCateringChildren} niños). Sin embargo, <strong>{totalNoLodgingYes} de esas personas regresan en carro</strong> a su casa tras la fiesta, por lo que <strong>solo {totalLodgingYes} personas necesitan cama/habitación</strong> ({totalLodgingAdults} adultos y {totalLodgingChildren} niños).
+              La diferencia se debe a que <strong>todas las {totalReceptionYes} personas confirmadas para la recepción tienen su cena asegurada</strong> ({totalCateringStandardAdults} menú tradicional + {totalCateringVegetarian} vegetariano + {totalCateringChildren} niños). Sin embargo, <strong>{totalNoLodgingYes} de esas personas regresan en carro</strong> a su casa tras la fiesta, por lo que <strong>solo {totalLodgingYes} personas necesitan cama/habitación</strong> ({totalLodgingAdults} adultos y {totalLodgingChildren} niños).
             </p>
 
             {/* Fórmula visual */}
@@ -514,7 +650,7 @@ export default function AdminReportClient({ initialGuests }: Props) {
               <div className="p-1">
                 <span className="text-[10px] uppercase text-gray-500 font-bold block">Total Cenas en Fiesta</span>
                 <span className="text-xl md:text-2xl font-extrabold text-indigo-700">{totalReceptionYes} platos</span>
-                <span className="text-[10px] text-gray-500 block">({totalCateringAdults} adultos + {totalCateringChildren} niños)</span>
+                <span className="text-[10px] text-gray-500 block">({totalCateringStandardAdults} trad. + {totalCateringVegetarian} veg. + {totalCateringChildren} niños)</span>
               </div>
               <div className="p-1 bg-amber-50/70 border border-amber-200/80 rounded-lg">
                 <span className="text-[10px] uppercase text-amber-800 font-bold block">➖ Regresan en Carro</span>
@@ -680,6 +816,26 @@ export default function AdminReportClient({ initialGuests }: Props) {
               Confirmados ({processedRows.filter(r => r.hasResponded && !r.isFullyDeclined).length})
             </button>
             <button
+              onClick={() => setFilterTab("vegetarian")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                filterTab === "vegetarian"
+                  ? "bg-emerald-700 text-white"
+                  : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-300"
+              }`}
+            >
+              🥗 Vegetariano ({totalCateringVegetarian})
+            </button>
+            <button
+              onClick={() => setFilterTab("children")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                filterTab === "children"
+                  ? "bg-teal-700 text-white"
+                  : "bg-teal-50 text-teal-800 hover:bg-teal-100 border border-teal-300"
+              }`}
+            >
+              🧒 Menú Niños ({totalCateringChildren})
+            </button>
+            <button
               onClick={() => setFilterTab("lodging")}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 filterTab === "lodging"
@@ -781,7 +937,8 @@ export default function AdminReportClient({ initialGuests }: Props) {
                           <span key={idx} className="flex items-center flex-wrap gap-1">
                             <span className={isNotAttending ? "line-through text-gray-400" : ""}>{name}</span>
                             <span className="flex items-center gap-1 opacity-90">
-                              {isChild(name) && <span title="Niño/a (Menú Infantil)" className="text-[10px] bg-teal-100 text-teal-800 px-1 rounded font-medium">🧒 Niño</span>}
+                              {isChild(name) && <span title="Niño/a (Menú Infantil)" className="text-[10px] bg-teal-100 text-teal-800 px-1.5 py-0.2 rounded font-medium">🧒 Menú Niño</span>}
+                              {isVegetarian(name) && <span title="Plato Vegetariano" className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded border border-emerald-300 font-semibold">🥗 Vegetariano</span>}
                               {isNotAttending ? (
                                 <span title="No asiste" className="text-[10px] bg-rose-50 text-rose-600 px-1 rounded border border-rose-200">❌ No asiste</span>
                               ) : isNoLodging(name) ? (
@@ -812,7 +969,8 @@ export default function AdminReportClient({ initialGuests }: Props) {
                             <span key={idx} className="flex items-center flex-wrap gap-1">
                               <span>{name}</span>
                               <span className="flex items-center gap-1 opacity-90">
-                                {isChild(name) && <span title="Niño/a (Menú Infantil)" className="text-[10px] bg-teal-100 text-teal-800 px-1 rounded font-medium">🧒 Niño</span>}
+                                {isChild(name) && <span title="Niño/a (Menú Infantil)" className="text-[10px] bg-teal-100 text-teal-800 px-1.5 py-0.2 rounded font-medium">🧒 Menú Niño</span>}
+                                {isVegetarian(name) && <span title="Plato Vegetariano" className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded border border-emerald-300 font-semibold">🥗 Vegetariano</span>}
                                 {isNoLodging(name) ? (
                                   <span title="No se hospeda (regresa en carro)" className="text-[10px] bg-amber-50 text-amber-700 px-1.5 py-0.2 rounded border border-amber-200 font-semibold">🚗 No se hospeda</span>
                                 ) : (
