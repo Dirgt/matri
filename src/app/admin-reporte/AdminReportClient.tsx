@@ -21,7 +21,11 @@ import {
   Utensils,
   BedDouble,
   Car,
-  Info
+  Info,
+  ChevronDown,
+  ChevronUp,
+  HelpCircle,
+  ArrowRight
 } from "lucide-react";
 
 export interface GuestRecord {
@@ -46,7 +50,8 @@ export default function AdminReportClient({ initialGuests }: Props) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterTab, setFilterTab] = useState<"all" | "confirmed" | "declined" | "pending">("all");
+  const [filterTab, setFilterTab] = useState<"all" | "confirmed" | "declined" | "pending" | "no-lodging" | "lodging">("all");
+  const [showStayingList, setShowStayingList] = useState<boolean>(false);
 
   // State for manual edit modal
   const [editingGuest, setEditingGuest] = useState<GuestRecord | null>(null);
@@ -177,7 +182,9 @@ export default function AdminReportClient({ initialGuests }: Props) {
       "jonathan morales",
       "maria quintero",
       "juan carlos ochoa",
-      "miryam chinchilla"
+      "miryam chinchilla",
+      "andrea perez",
+      "invitado"
     ].some(person => normalized.includes(person));
   };
 
@@ -191,6 +198,13 @@ export default function AdminReportClient({ initialGuests }: Props) {
   let totalCateringChildren = 0;
   let totalLodgingYes = 0;
   let totalNoLodgingYes = 0;
+  let totalLodgingAdults = 0;
+  let totalLodgingChildren = 0;
+  let totalNoLodgingAdults = 0;
+  let totalNoLodgingChildren = 0;
+
+  const noLodgingPeople: Array<{ name: string; url_id: string; isChild: boolean }> = [];
+  const lodgingPeople: Array<{ name: string; url_id: string; isChild: boolean }> = [];
 
   const processedRows = guests.map((guest) => {
     totalPasses += guest.passes || 0;
@@ -231,10 +245,23 @@ export default function AdminReportClient({ initialGuests }: Props) {
       // Calculate Lodging for ANY confirmed attendee
       if (last.ceremony || last.reception) {
         respondedGuests.forEach(name => {
+          const child = isChild(name);
           if (isNoLodging(name)) {
             totalNoLodgingYes++;
+            if (child) {
+              totalNoLodgingChildren++;
+            } else {
+              totalNoLodgingAdults++;
+            }
+            noLodgingPeople.push({ name, url_id: guest.url_id, isChild: child });
           } else {
             totalLodgingYes++;
+            if (child) {
+              totalLodgingChildren++;
+            } else {
+              totalLodgingAdults++;
+            }
+            lodgingPeople.push({ name, url_id: guest.url_id, isChild: child });
           }
         });
       }
@@ -270,7 +297,9 @@ export default function AdminReportClient({ initialGuests }: Props) {
       ceremonyStatus,
       receptionStatus,
       isFullyDeclined,
-      timestamp
+      timestamp,
+      hasNoLodging: respondedGuests.some(name => isNoLodging(name)),
+      hasLodging: respondedGuests.some(name => !isNoLodging(name))
     };
   });
 
@@ -294,6 +323,12 @@ export default function AdminReportClient({ initialGuests }: Props) {
     }
     if (filterTab === "pending") {
       return !row.hasResponded;
+    }
+    if (filterTab === "no-lodging") {
+      return row.hasResponded && row.respondedGuests.some(name => isNoLodging(name));
+    }
+    if (filterTab === "lodging") {
+      return row.hasResponded && (row.ceremonyStatus === "yes" || row.receptionStatus === "yes") && row.respondedGuests.some(name => !isNoLodging(name));
     }
     return true;
   });
@@ -360,75 +395,254 @@ export default function AdminReportClient({ initialGuests }: Props) {
           </div>
         </div>
 
-        {/* Logística */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8">
-          
-          {/* Catering */}
-          <div className="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h2 className="text-xl font-script text-[#3b7156] mb-4 flex items-center gap-2">
-              <Utensils size={20} /> Catering (Cena)
+        {/* Logística: Comparativa Catering vs Hospedaje */}
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <h2 className="text-xl font-script text-[#3b7156] flex items-center gap-2">
+              <Utensils size={22} /> Logística: Alimentación (Catering) vs Hospedaje
             </h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-50 p-4 rounded-xl flex flex-col items-center justify-center text-center border border-gray-100">
-                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mb-2">
-                  <User size={16} />
+            <span className="text-xs bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1 rounded-full font-medium self-start sm:self-auto">
+              ⚠️ Las cuentas de comida y hospedaje son distintas
+            </span>
+          </div>
+
+          {/* Tarjetas Principales */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            
+            {/* Catering */}
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2 text-indigo-700 font-semibold text-sm">
+                    <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                      <Utensils size={16} />
+                    </div>
+                    <span>Catering (Cena)</span>
+                  </div>
+                  <span className="text-xs bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded-full">
+                    {totalReceptionYes} Platos
+                  </span>
                 </div>
-                <span className="text-2xl font-bold text-indigo-600">{totalCateringAdults}</span>
-                <span className="text-[10px] uppercase tracking-wider text-gray-500 font-medium mt-1">
-                  Menú Adultos
-                </span>
+                <div className="grid grid-cols-2 gap-2 my-2">
+                  <div className="bg-indigo-50/50 p-2.5 rounded-xl text-center border border-indigo-100">
+                    <span className="text-2xl font-bold text-indigo-700 block">{totalCateringAdults}</span>
+                    <span className="text-[10px] uppercase tracking-wider text-indigo-600 font-semibold">Adultos</span>
+                  </div>
+                  <div className="bg-teal-50/50 p-2.5 rounded-xl text-center border border-teal-100">
+                    <span className="text-2xl font-bold text-teal-700 block">{totalCateringChildren}</span>
+                    <span className="text-[10px] uppercase tracking-wider text-teal-600 font-semibold">Niños</span>
+                  </div>
+                </div>
               </div>
-              <div className="bg-gray-50 p-4 rounded-xl flex flex-col items-center justify-center text-center border border-gray-100">
-                <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center mb-2">
-                  <Smile size={16} />
+              <p className="text-[11px] text-gray-500 mt-2 pt-2 border-t border-gray-100 italic">
+                ✨ Todos los confirmados a la fiesta tienen cena asegurada.
+              </p>
+            </div>
+
+            {/* Hospedaje */}
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2 text-emerald-700 font-semibold text-sm">
+                    <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                      <BedDouble size={16} />
+                    </div>
+                    <span>Hospedaje (Noche)</span>
+                  </div>
+                  <span className="text-xs bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-full">
+                    {totalLodgingYes} Personas
+                  </span>
                 </div>
-                <span className="text-2xl font-bold text-teal-600">{totalCateringChildren}</span>
-                <span className="text-[10px] uppercase tracking-wider text-gray-500 font-medium mt-1">
-                  Menú Niños
-                </span>
+                <div className="grid grid-cols-2 gap-2 my-2">
+                  <div className="bg-emerald-50/50 p-2.5 rounded-xl text-center border border-emerald-100">
+                    <span className="text-2xl font-bold text-emerald-700 block">{totalLodgingAdults}</span>
+                    <span className="text-[10px] uppercase tracking-wider text-emerald-600 font-semibold">Adultos</span>
+                  </div>
+                  <div className="bg-teal-50/50 p-2.5 rounded-xl text-center border border-teal-100">
+                    <span className="text-2xl font-bold text-teal-700 block">{totalLodgingChildren}</span>
+                    <span className="text-[10px] uppercase tracking-wider text-teal-600 font-semibold">Niños</span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-[11px] text-gray-500 mt-2 pt-2 border-t border-gray-100 italic">
+                🛏️ Personas que duermen y ocupan cama en la hacienda.
+              </p>
+            </div>
+
+            {/* No Se Hospedan */}
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2 text-amber-700 font-semibold text-sm">
+                    <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
+                      <Car size={16} />
+                    </div>
+                    <span>No Se Hospedan</span>
+                  </div>
+                  <span className="text-xs bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">
+                    {totalNoLodgingYes} Personas
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 my-2">
+                  <div className="bg-amber-50/50 p-2.5 rounded-xl text-center border border-amber-100">
+                    <span className="text-2xl font-bold text-amber-700 block">{totalNoLodgingAdults}</span>
+                    <span className="text-[10px] uppercase tracking-wider text-amber-600 font-semibold">Adultos</span>
+                  </div>
+                  <div className="bg-gray-50 p-2.5 rounded-xl text-center border border-gray-100">
+                    <span className="text-2xl font-bold text-gray-400 block">{totalNoLodgingChildren}</span>
+                    <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">Niños</span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-[11px] text-gray-500 mt-2 pt-2 border-t border-gray-100 italic">
+                🚗 Cenan con todos en la fiesta, pero se devuelven en carro.
+              </p>
+            </div>
+          </div>
+
+          {/* Explicación & Ecuación Visual */}
+          <div className="bg-[#5c6e64]/5 border border-[#5c6e64]/20 rounded-2xl p-5 mb-6">
+            <div className="flex items-center gap-2 text-[#3b7156] font-bold text-sm mb-2">
+              <HelpCircle size={18} /> ¿Por qué la cuenta de Comida ({totalReceptionYes}) es diferente a la de Hospedaje ({totalLodgingYes})?
+            </div>
+            <p className="text-xs text-gray-600 leading-relaxed mb-4">
+              La diferencia se debe a que <strong>todas las {totalReceptionYes} personas confirmadas para la recepción tienen su cena asegurada</strong> ({totalCateringAdults} adultos y {totalCateringChildren} niños). Sin embargo, <strong>{totalNoLodgingYes} de esas personas regresan en carro</strong> a su casa tras la fiesta, por lo que <strong>solo {totalLodgingYes} personas necesitan cama/habitación</strong> ({totalLodgingAdults} adultos y {totalLodgingChildren} niños).
+            </p>
+
+            {/* Fórmula visual */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center text-center p-3.5 bg-white/90 rounded-xl border border-gray-200/80 shadow-xs">
+              <div className="p-1">
+                <span className="text-[10px] uppercase text-gray-500 font-bold block">Total Cenas en Fiesta</span>
+                <span className="text-xl md:text-2xl font-extrabold text-indigo-700">{totalReceptionYes} platos</span>
+                <span className="text-[10px] text-gray-500 block">({totalCateringAdults} adultos + {totalCateringChildren} niños)</span>
+              </div>
+              <div className="p-1 bg-amber-50/70 border border-amber-200/80 rounded-lg">
+                <span className="text-[10px] uppercase text-amber-800 font-bold block">➖ Regresan en Carro</span>
+                <span className="text-xl md:text-2xl font-extrabold text-amber-700">{totalNoLodgingYes} personas</span>
+                <span className="text-[10px] text-amber-600 block">(Cenan pero NO duermen)</span>
+              </div>
+              <div className="p-1 bg-emerald-50/70 border border-emerald-200/80 rounded-lg">
+                <span className="text-[10px] uppercase text-emerald-800 font-bold block">🟰 Total Hospedaje</span>
+                <span className="text-xl md:text-2xl font-extrabold text-emerald-700">{totalLodgingYes} personas</span>
+                <span className="text-[10px] text-emerald-600 block">({totalLodgingAdults} adultos + {totalLodgingChildren} niños)</span>
               </div>
             </div>
           </div>
 
-          {/* Hospedaje */}
-          <div className="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h2 className="text-xl font-script text-[#3b7156] mb-4 flex items-center gap-2">
-              <BedDouble size={20} /> Hospedaje
-            </h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-50 p-4 rounded-xl flex flex-col items-center justify-center text-center border border-gray-100">
-                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-2">
+          {/* Desglose Detallado de las Personas que NO se Hospedan */}
+          <div className="bg-amber-50/50 border border-amber-200/80 rounded-2xl p-5 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+              <div className="flex items-center gap-2 text-amber-900 font-bold text-sm">
+                <Car size={18} className="text-amber-600" />
+                <span>Lista oficial de las {totalNoLodgingYes} personas que NO se hospedan:</span>
+              </div>
+              <button
+                onClick={() => setFilterTab(filterTab === "no-lodging" ? "all" : "no-lodging")}
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition cursor-pointer self-start sm:self-auto shadow-xs"
+              >
+                {filterTab === "no-lodging" ? "Quitar filtro de tabla" : "Ver solo estos en la tabla abajo ⬇️"}
+              </button>
+            </div>
+            
+            <p className="text-xs text-amber-800/80 mb-3">
+              Haz clic en cualquier persona para buscar rápidamente su invitación en la tabla inferior:
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+              {noLodgingPeople.map((p, idx) => (
+                <div 
+                  key={idx}
+                  onClick={() => {
+                    setSearchQuery(p.name);
+                    setFilterTab("all");
+                  }}
+                  className="bg-white p-3 rounded-xl border border-amber-200 shadow-xs flex items-center justify-between gap-2 hover:border-amber-400 hover:shadow-sm transition cursor-pointer group"
+                  title="Clic para buscar en la tabla"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold flex items-center justify-center shrink-0">
+                      {idx + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <span className="text-xs font-bold text-gray-800 block truncate group-hover:text-amber-700">
+                        {p.name}
+                      </span>
+                      <span className="text-[10px] text-gray-400 font-mono block truncate">
+                        {p.url_id}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-semibold shrink-0">
+                    🚗 Auto
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Acordeón de las Personas que SÍ se Hospedan */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-xs">
+            <button
+              onClick={() => setShowStayingList(!showStayingList)}
+              className="w-full flex items-center justify-between text-left cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
                   <BedDouble size={16} />
                 </div>
-                <span className="text-2xl font-bold text-emerald-600">{totalLodgingYes}</span>
-                <span className="text-[10px] uppercase tracking-wider text-gray-500 font-medium mt-1">
-                  Se Hospedan
-                </span>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-xl flex flex-col items-center justify-center text-center border border-gray-100">
-                <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-2">
-                  <Car size={16} />
+                <div>
+                  <span className="text-sm font-bold text-gray-800">
+                    Ver desglose de las {totalLodgingYes} personas que SÍ se hospedan
+                  </span>
+                  <span className="text-xs text-gray-500 block">
+                    {totalLodgingAdults} adultos + {totalLodgingChildren} niños
+                  </span>
                 </div>
-                <span className="text-2xl font-bold text-amber-600">{totalNoLodgingYes}</span>
-                <span className="text-[10px] uppercase tracking-wider text-gray-500 font-medium mt-1">
-                  No Se Hospedan
-                </span>
               </div>
-            </div>
+              <div className="flex items-center gap-1 text-xs text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-1 rounded-lg">
+                <span>{showStayingList ? "Ocultar lista" : "Mostrar lista"}</span>
+                {showStayingList ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </div>
+            </button>
+
+            {showStayingList && (
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="flex items-center justify-between mb-2.5">
+                  <span className="text-xs font-semibold text-gray-600">
+                    Lista completa de huéspedes ({totalLodgingYes} personas):
+                  </span>
+                  <button
+                    onClick={() => setFilterTab(filterTab === "lodging" ? "all" : "lodging")}
+                    className="text-xs text-emerald-700 hover:underline font-semibold cursor-pointer"
+                  >
+                    {filterTab === "lodging" ? "Quitar filtro de tabla" : "Filtrar en la tabla abajo ⬇️"}
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-1.5 max-h-64 overflow-y-auto p-1 bg-gray-50/50 rounded-xl border border-gray-100">
+                  {lodgingPeople.map((p, idx) => (
+                    <span
+                      key={idx}
+                      onClick={() => {
+                        setSearchQuery(p.name);
+                        setFilterTab("all");
+                      }}
+                      className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 cursor-pointer transition shadow-2xs"
+                      title={`Grupo: ${p.url_id}`}
+                    >
+                      <span className="font-medium">{p.name}</span>
+                      {p.isChild ? (
+                        <span className="text-[10px] bg-teal-100 text-teal-800 px-1.5 py-0.2 rounded font-semibold">🧒 Niño</span>
+                      ) : (
+                        <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded font-semibold">🛏️ Adulto</span>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Info Note */}
-        <div className="bg-[#5c6e64]/5 border border-[#5c6e64]/20 rounded-xl p-4 mb-8 flex items-start gap-3">
-          <Info className="text-[#5c6e64] shrink-0 mt-0.5" size={20} />
-          <div className="text-sm text-[#5c6e64]">
-            <p className="font-semibold mb-1">Nota sobre los cálculos:</p>
-            <p className="opacity-90 leading-relaxed">
-              El total de <strong>Menú Adultos</strong> incluye tanto a los adultos que se hospedan como a los que <strong>no se hospedan</strong>. 
-              Es decir, todas las personas mayores confirmadas para la cena tienen su plato asegurado, sin importar si duermen en el lugar o no.
-            </p>
-          </div>
-        </div>
         {/* Controls: Search & Tabs */}
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Search bar */}
@@ -464,6 +678,26 @@ export default function AdminReportClient({ initialGuests }: Props) {
               }`}
             >
               Confirmados ({processedRows.filter(r => r.hasResponded && !r.isFullyDeclined).length})
+            </button>
+            <button
+              onClick={() => setFilterTab("lodging")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                filterTab === "lodging"
+                  ? "bg-emerald-600 text-white"
+                  : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200"
+              }`}
+            >
+              🛏️ Se Hospedan ({totalLodgingYes})
+            </button>
+            <button
+              onClick={() => setFilterTab("no-lodging")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                filterTab === "no-lodging"
+                  ? "bg-amber-600 text-white"
+                  : "bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200"
+              }`}
+            >
+              🚗 No Se Hospedan ({totalNoLodgingYes})
             </button>
             <button
               onClick={() => setFilterTab("pending")}
@@ -546,14 +780,14 @@ export default function AdminReportClient({ initialGuests }: Props) {
                         return (
                           <span key={idx} className="flex items-center flex-wrap gap-1">
                             <span className={isNotAttending ? "line-through text-gray-400" : ""}>{name}</span>
-                            <span className="flex items-center gap-0.5 opacity-80">
-                              {isChild(name) && <span title="Niño/a (Menú Infantil)" className="text-[13px]">🧒</span>}
+                            <span className="flex items-center gap-1 opacity-90">
+                              {isChild(name) && <span title="Niño/a (Menú Infantil)" className="text-[10px] bg-teal-100 text-teal-800 px-1 rounded font-medium">🧒 Niño</span>}
                               {isNotAttending ? (
-                                <span title="No asiste" className="text-[13px]">❌</span>
+                                <span title="No asiste" className="text-[10px] bg-rose-50 text-rose-600 px-1 rounded border border-rose-200">❌ No asiste</span>
                               ) : isNoLodging(name) ? (
-                                <span title="No se hospeda" className="text-[13px]">🚗</span>
+                                <span title="No se hospeda (regresa en carro)" className="text-[10px] bg-amber-50 text-amber-700 px-1.5 py-0.2 rounded border border-amber-200 font-semibold">🚗 No se hospeda</span>
                               ) : (
-                                <span title="Se hospeda" className="text-[13px]">🛏️</span>
+                                <span title="Se hospeda en el lugar" className="text-[10px] bg-emerald-50 text-emerald-700 px-1.5 py-0.2 rounded border border-emerald-200 font-semibold">🛏️ Se hospeda</span>
                               )}
                             </span>
                           </span>
@@ -577,12 +811,12 @@ export default function AdminReportClient({ initialGuests }: Props) {
                           {row.respondedGuests.map((name, idx) => (
                             <span key={idx} className="flex items-center flex-wrap gap-1">
                               <span>{name}</span>
-                              <span className="flex items-center gap-0.5 opacity-80">
-                                {isChild(name) && <span title="Niño/a (Menú Infantil)" className="text-[13px]">🧒</span>}
+                              <span className="flex items-center gap-1 opacity-90">
+                                {isChild(name) && <span title="Niño/a (Menú Infantil)" className="text-[10px] bg-teal-100 text-teal-800 px-1 rounded font-medium">🧒 Niño</span>}
                                 {isNoLodging(name) ? (
-                                  <span title="No se hospeda" className="text-[13px]">🚗</span>
+                                  <span title="No se hospeda (regresa en carro)" className="text-[10px] bg-amber-50 text-amber-700 px-1.5 py-0.2 rounded border border-amber-200 font-semibold">🚗 No se hospeda</span>
                                 ) : (
-                                  <span title="Se hospeda" className="text-[13px]">🛏️</span>
+                                  <span title="Se hospeda en el lugar" className="text-[10px] bg-emerald-50 text-emerald-700 px-1.5 py-0.2 rounded border border-emerald-200 font-semibold">🛏️ Se hospeda</span>
                                 )}
                               </span>
                             </span>
